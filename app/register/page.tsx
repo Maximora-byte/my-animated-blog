@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { AnimatedCharacter } from '@/components/AnimatedCharacter';
+import { Captcha } from '@/components/Captcha';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -14,6 +15,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [captchaValid, setCaptchaValid] = useState(false);
   const [focusedField, setFocusedField] = useState<'name' | 'email' | 'password' | 'confirm' | null>(null);
 
   const isTyping = name.length > 0 || email.length > 0 || password.length > 0 || confirmPassword.length > 0;
@@ -21,10 +23,17 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (password !== confirmPassword) {
       alert('两次输入的密码不一致');
       return;
     }
+    
+    if (!captchaValid) {
+      alert('请正确输入验证码');
+      return;
+    }
+    
     setIsLoading(true);
     // 模拟注册
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -159,16 +168,25 @@ export default function RegisterPage() {
                 <p className="text-red-500 text-sm mt-1">密码不匹配</p>
               )}
             </motion.div>
+
+            {/* 验证码 */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }} 
+              animate={{ opacity: 1, x: 0 }} 
+              transition={{ delay: 0.5 }}
+            >
+              <Captcha onVerify={setCaptchaValid} />
+            </motion.div>
             
             {/* 注册按钮 */}
             <motion.button
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.55 }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              disabled={isLoading || password !== confirmPassword}
+              disabled={isLoading || password !== confirmPassword || !captchaValid}
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
